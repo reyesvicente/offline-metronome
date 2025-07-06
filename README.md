@@ -3,7 +3,7 @@
 A simple, offline metronome application that works on Windows, macOS, and Linux (Debian/Ubuntu).
 
 ## Features
-- Adjustable tempo (40-208 BPM)
+- Adjustable tempo (40-250 BPM)
 - Configurable beats per measure (2, 3, 4, 6, or 8)
 - Visual beat indicator
 - Adjustable volume
