@@ -4,6 +4,12 @@ Metronome Desktop App for Ubuntu
 Requires: pip install sounddevice numpy
 """
 
+import ctypes
+try:
+    ctypes.CDLL("libX11.so.6").XInitThreads()
+except Exception:
+    pass
+
 import tkinter as tk
 from tkinter import font as tkfont
 import threading
