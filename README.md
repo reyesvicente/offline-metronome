@@ -2,7 +2,7 @@
 
 A professional-grade, lightweight, and stable offline metronome application built with Python and PyQt6. Designed for musicians who need a reliable timing tool without the bloat of web-based alternatives.
 
-![Metronome Preview](https://via.placeholder.com/400x460.png?text=TempoApp+Interface)
+![Metronome Preview](./metronome.png)
 
 ## Key Features
 
