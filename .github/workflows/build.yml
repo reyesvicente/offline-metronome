@@ -72,10 +72,10 @@ jobs:
           sudo apt install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
           # Create temporary structure
-          mkdir -p pkg/usr/bin pkg/usr/share/applications pkg/usr/share/icons
+          mkdir -p pkg/usr/bin pkg/usr/share/applications pkg/usr/share/pixmaps
           cp dist/ChronicBeat pkg/usr/bin/chronic-beat
           cp chronicbeat.desktop pkg/usr/share/applications/
-          cp metronome.png pkg/usr/share/icons/chronicbeat.png
+          cp metronome.png pkg/usr/share/pixmaps/chronicbeat.png
           
           fpm -s dir -t deb \
             -n "chronic-beat" \
