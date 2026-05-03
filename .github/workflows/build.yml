@@ -71,12 +71,17 @@ jobs:
         run: |
           sudo apt install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
+          # Create temporary structure
+          mkdir -p pkg/usr/bin pkg/usr/share/applications pkg/usr/share/icons
+          cp dist/ChronicBeat pkg/usr/bin/chronic-beat
+          cp chronicbeat.desktop pkg/usr/share/applications/
+          cp metronome.png pkg/usr/share/icons/chronicbeat.png
+          
           fpm -s dir -t deb \
             -n "chronic-beat" \
             -v "1.0.0" \
-            --prefix /usr/bin \
-            -C dist/ \
-            ChronicBeat
+            -C pkg/ \
+            .
           mv chronic-beat*.deb chronic-beat.deb
 
       - name: Upload Artifact

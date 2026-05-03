@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ChronicBeat
+GenericName=Metronome
+Comment=High-precision professional metronome
+Exec=chronic-beat
+Icon=chronicbeat
+Terminal=false
+Categories=AudioVideo;Music;Utility;
+Keywords=metronome;bpm;tempo;beat;music;
+StartupNotify=true
