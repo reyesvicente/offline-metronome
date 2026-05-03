@@ -1,16 +1,28 @@
-name: Build Release
+name: Build and Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: windows-latest
+            artifact_name: ChronicBeat.exe
+            asset_name: ChronicBeat-Windows.exe
+          - os: macos-latest
+            artifact_name: dist/ChronicBeat.dmg
+            asset_name: ChronicBeat-Mac.dmg
+          - os: ubuntu-latest
+            artifact_name: chronic-beat.deb
+            asset_name: ChronicBeat-Linux.deb
 
     steps:
       - uses: actions/checkout@v4
@@ -19,18 +31,50 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install pyinstaller Pillow
 
-      - name: Build with PyInstaller
+      - name: Build with PyInstaller (Windows/Linux)
+        if: matrix.os != 'macos-latest'
         run: |
-          pyinstaller --onefile --windowed --name="TempoMetronome" metronome.py
+          pyinstaller --onefile --windowed --name="ChronicBeat" metronome.py
+
+      - name: Build with PyInstaller (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          pyinstaller --onefile --windowed --name="ChronicBeat" metronome.py
+          # Create DMG
+          brew install create-dmg
+          create-dmg \
+            --volname "ChronicBeat Installer" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "ChronicBeat.app" 200 190 \
+            --hide-extension "ChronicBeat.app" \
+            --app-drop-link 600 185 \
+            "ChronicBeat.dmg" \
+            "dist/ChronicBeat.app"
+
+      - name: Create Debian Package (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install -y ruby ruby-dev rubygems build-essential
+          sudo gem install --no-document fpm
+          fpm -s dir -t deb \
+            -n "chronic-beat" \
+            -v "1.0.0" \
+            --prefix /usr/bin \
+            -C dist/ \
+            ChronicBeat
+          mv chronic-beat*.deb chronic-beat.deb
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-binary
-          path: dist/
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.os == 'windows-latest' && 'dist/ChronicBeat.exe' || (matrix.os == 'macos-latest' && 'ChronicBeat.dmg' || 'chronic-beat.deb') }}

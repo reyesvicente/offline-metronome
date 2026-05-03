@@ -5,7 +5,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="$SCRIPT_DIR/env"
 
-echo "--- TempoApp Installation ---"
+echo "--- ChronicBeat Installation ---"
 
 # 1. Ensure Python 3 is installed
 if ! command -v python3 &> /dev/null; then
@@ -40,16 +40,16 @@ fi
 
 # 6. Create Desktop launcher
 echo "→ Creating desktop entry..."
-DESKTOP_PATH="$HOME/.local/share/applications/metronome.desktop"
+DESKTOP_PATH="$HOME/.local/share/applications/chronicbeat.desktop"
 mkdir -p "$(dirname "$DESKTOP_PATH")"
 
 cat > "$DESKTOP_PATH" <<EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Metronome
+Name=ChronicBeat
 GenericName=Metronome
-Comment=High-precision offline metronome
+Comment=High-precision professional metronome
 Exec=$PYTHON $SCRIPT_DIR/metronome.py
 Icon=$ICON
 Terminal=false
@@ -64,5 +64,5 @@ update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 echo ""
 echo "✓ Successfully installed!"
 echo "-----------------------"
-echo "You can now launch 'Metronome' from your application menu."
+echo "You can now launch 'ChronicBeat' from your application menu."
 echo "Or run manually: $PYTHON $SCRIPT_DIR/metronome.py"

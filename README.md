@@ -1,8 +1,8 @@
-# TempoApp (Offline Metronome)
+# ChronicBeat (Professional Metronome)
 
 A professional-grade, lightweight, and stable offline metronome application built with Python and PyQt6. Designed for musicians who need a reliable timing tool without the bloat of web-based alternatives.
 
-![Metronome Preview](./metronome.png)
+![ChronicBeat Preview](./metronome.png)
 
 ## Key Features
 

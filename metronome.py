@@ -98,7 +98,7 @@ class MetronomeApp(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Metronome (Stable PyQt6)")
+        self.setWindowTitle("ChronicBeat")
         self.setFixedSize(400, 460)
 
         self.audio = AudioEngine()
@@ -126,7 +126,7 @@ class MetronomeApp(QWidget):
     def _build_ui(self):
         layout = QVBoxLayout()
 
-        title = QLabel("METRONOME")
+        title = QLabel("CHRONICBEAT")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 20px; font-weight: bold;")
         layout.addWidget(title)
