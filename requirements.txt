@@ -1,2 +1,4 @@
 sounddevice>=0.4.6
 numpy>=1.24
+simpleaudio==1.0.4
+PyQt6==6.11.0
