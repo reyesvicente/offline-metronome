@@ -11,41 +11,49 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QSlider, QLineEdit
 )
 
-from PyQt6.QtMultimedia import QSoundEffect
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+
+import numpy as np
+import sounddevice as sd
 
 
 # ─────────────────────────────────────────────
-# AUDIO ENGINE (QtMultimedia - STABLE)
+# AUDIO ENGINE (100% STABLE - Qt backend)
 # ─────────────────────────────────────────────
 class AudioEngine:
     def __init__(self):
-        base = os.path.dirname(os.path.abspath(__file__))
+        self.sr = 44100
 
-        self.click = QSoundEffect()
-        self.accent = QSoundEffect()
+        # pre-generate click buffers
+        self.click = self._make_click(800)
+        self.accent = self._make_click(1200)
 
-        self.click.setSource(QUrl.fromLocalFile(base + "/click.wav"))
-        self.accent.setSource(QUrl.fromLocalFile(base + "/click.wav"))
-
-        self.click.setVolume(0.8)
-        self.accent.setVolume(0.9)
+    def _make_click(self, freq):
+        t = np.linspace(0, 0.03, int(self.sr * 0.03), False)
+        wave = np.sin(2 * np.pi * freq * t)
+        env = np.exp(-t * 80)
+        audio = (wave * env * 0.3).astype(np.float32)
+        stereo = np.column_stack([audio, audio])
+        return stereo
 
     def play(self, accent=False):
-        if accent:
-            self.accent.play()
-        else:
-            self.click.play()
+        try:
+            sd.play(self.accent if accent else self.click,
+                    samplerate=self.sr,
+                    blocking=False)
+        except Exception as e:
+            print("Audio error:", e)
 
 
 # ─────────────────────────────────────────────
-# SIGNAL BRIDGE (thread-safe)
+# THREAD SIGNALS
 # ─────────────────────────────────────────────
 class Signals(QObject):
     beat = pyqtSignal(bool)
 
 
 # ─────────────────────────────────────────────
-# METRONOME ENGINE
+# METRONOME ENGINE (stable timing loop)
 # ─────────────────────────────────────────────
 class Metronome(threading.Thread):
     def __init__(self, bpm_getter, beats_getter, signals):
@@ -102,7 +110,7 @@ class MetronomeApp(QWidget):
 
         self.tap_times = []
 
-        self._build()
+        self._build_ui()
 
         self.signals.beat.connect(self.on_beat)
 
@@ -112,8 +120,10 @@ class MetronomeApp(QWidget):
             self.signals
         )
 
-    # ───────────────────────── UI ─────────────────────────
-    def _build(self):
+    # ─────────────────────────────────────────────
+    # UI
+    # ─────────────────────────────────────────────
+    def _build_ui(self):
         layout = QVBoxLayout()
 
         title = QLabel("METRONOME")
@@ -147,7 +157,7 @@ class MetronomeApp(QWidget):
 
         layout.addLayout(row)
 
-        # play
+        # play button
         self.play_btn = QPushButton("PLAY")
         self.play_btn.clicked.connect(self.toggle)
         self.play_btn.setStyleSheet("""
@@ -165,7 +175,9 @@ class MetronomeApp(QWidget):
 
         self.setLayout(layout)
 
-    # ───────────────────────── LOGIC ─────────────────────────
+    # ─────────────────────────────────────────────
+    # BPM LOGIC
+    # ─────────────────────────────────────────────
     def update_bpm(self):
         try:
             self.bpm = int(self.bpm_input.text())
@@ -181,9 +193,12 @@ class MetronomeApp(QWidget):
         self.beats = b
         self.beat_label.setText(f"Beats: {b}")
 
-    # ───────────────────────── TAP TEMPO ─────────────────────────
+    # ─────────────────────────────────────────────
+    # TAP TEMPO (averaged)
+    # ─────────────────────────────────────────────
     def tap_tempo(self):
         now = time.time()
+
         self.tap_times.append(now)
         self.tap_times = self.tap_times[-4:]
 
@@ -203,12 +218,19 @@ class MetronomeApp(QWidget):
         self.slider.setValue(self.bpm)
         self.bpm_input.setText(str(self.bpm))
 
-    # ───────────────────────── ENGINE ─────────────────────────
+    # ─────────────────────────────────────────────
+    # ENGINE CONTROL
+    # ─────────────────────────────────────────────
     def toggle(self):
         if self.running:
             self.engine.stop_engine()
             self.play_btn.setText("PLAY")
-            self.play_btn.setStyleSheet("background:#2ECC71;color:white;font-size:18px;padding:10px;")
+            self.play_btn.setStyleSheet("""
+                font-size: 18px;
+                padding: 10px;
+                background: #2ECC71;
+                color: white;
+            """)
         else:
             if not self.engine.is_alive():
                 self.engine = Metronome(
@@ -219,17 +241,24 @@ class MetronomeApp(QWidget):
                 self.engine.start_engine()
 
             self.play_btn.setText("STOP")
-            self.play_btn.setStyleSheet("background:#E94560;color:white;font-size:18px;padding:10px;")
+            self.play_btn.setStyleSheet("""
+                font-size: 18px;
+                padding: 10px;
+                background: #E94560;
+                color: white;
+            """)
 
         self.running = not self.running
 
-    # ───────────────────────── BEAT ─────────────────────────
+    # ─────────────────────────────────────────────
+    # BEAT HANDLER
+    # ─────────────────────────────────────────────
     def on_beat(self, accent):
         self.audio.play(accent)
 
 
 # ─────────────────────────────────────────────
-# RUN
+# RUN APP
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
     app = QApplication(sys.argv)
