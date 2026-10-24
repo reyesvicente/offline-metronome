@@ -25,10 +25,10 @@ jobs:
             asset_name: ChronicBeat-Linux.deb
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pyinstaller Pillow
+          pip install "pyinstaller>=6.22.3" "Pillow>=13.0.0"
 
       - name: Build with PyInstaller (Windows/Linux)
         if: matrix.os != 'macos-latest'
@@ -79,13 +79,13 @@ jobs:
           
           fpm -s dir -t deb \
             -n "chronic-beat" \
-            -v "1.0.0" \
+            -v "1.0.3" \
             -C pkg/ \
             .
           mv chronic-beat*.deb chronic-beat.deb
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.asset_name }}
           path: ${{ matrix.os == 'windows-latest' && 'dist/ChronicBeat.exe' || (matrix.os == 'macos-latest' && 'ChronicBeat.dmg' || 'chronic-beat.deb') }}
